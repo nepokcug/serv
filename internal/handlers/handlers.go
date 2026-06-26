@@ -11,7 +11,24 @@ import (
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	html, err := os.ReadFile("index.html")
+	// На случай запуска сервера из разных директорий
+	var html []byte
+	var err error
+
+	// Возможные пути к index.html
+	paths := []string{
+		"index.html",       // если запуск из корня проекта
+		"../index.html",    // если запуск из папки cmd/
+		"../../index.html", // если запуск из internal/handlers/
+	}
+
+	for _, path := range paths {
+		html, err = os.ReadFile(path)
+		if err == nil {
+			break
+		}
+	}
+
 	if err != nil {
 		http.Error(w, "Failed to load index.html", http.StatusInternalServerError)
 		return
